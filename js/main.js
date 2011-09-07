@@ -42,7 +42,7 @@ NodeList.prototype.toArray = function () {
         var a = document.getElementById('loader');
         a.style.display = 'none'
     }
-/*
+	/*
    
    API
    
@@ -576,23 +576,45 @@ ojpaosjd o
 
     //This needs abstracting into a class/module for handling emails rather than this stupid massive function
 
+	/*
+	* JH I've changed this funciton to iterate either over the template or the panels and gleen all the data and push into an un formated array,
+	* The script then runns over the unformated data and formats it into a string, the reason for doing this in two steps is to future proof the 
+	* functions for use in any PDF generator which may need to style the content differently
+	*/ 
     function sendEmail(a) {
         var template, d, f, element;
+		var countriesArray = [];
+		var countryDataObject;
+		
         element = document.getElementById('template');
         if (document.defaultView.getComputedStyle(element, null).getPropertyValue('display') === 'block') {
-            template = '#template'
+            template = '#template';
+			countryDataObject = gleenCategoriesData(element);
+			countryDataObject.name = document.getElementById('countryTitle').innerText;
+			countriesArray.push(countryDataObject);
         } else {
             template = '#panels .active';
+			var countryPanelsLiArray = document.querySelectorAll(template);
+			var countryLi;
+			for(var countryIndex=0;countryIndex < countryPanelsLiArray.length; countryIndex++){
+				countryLi = countryPanelsLiArray[countryIndex];
+				countryDataObject = gleenCategoriesData(countryLi.lastChild);
+				countryDataObject.name = countryLi.firstChild.textContent;
+				countriesArray.push(countryDataObject);
+			}
         }
 
         //Fuck sake this is getting silly. Must refactor!!!
-/*
+		/*
 	  @description Return an array of content as a document fragment. This needs to then be parsed in to a string for sending to email client 
 	  @returns (Array) DocumentFragment
-	*/
+		*/
+		d = formatCountriesDataArray(countriesArray);
+		
+		//d = d.replace(/&nbsp;/g, " ");
+		d = encodeURIComponent(d);	//this seems to do everything right, encodeURL faltered when it came across &amp; and &nbsp;.
 
-        var contents = document.querySelectorAll(template);
-
+		/*
         //Dummy array to hold all our data
         var dummy = [];
 
@@ -603,11 +625,76 @@ ojpaosjd o
         });
 
         d = dummy.join('');
+		*/
+
+		d += '<p>For more information please contact Amy Murtagh at <a href="mailTo:amymurtagh@eversheds.com">AmyMurtagh@eversheds.com</a><p>';
 
         f = "mailto:?body=" + d;
         window.location.href = f;
     }
 
+
+	/**
+	* @description function uses imput of div containing all categories and iterates through them building an object that contains only the visible data
+	*/
+	function gleenCategoriesData(categoriesContainerDiv){
+		var categoryDiv;
+		var categoryH2;
+		var subCategoryDiv;
+		var subCategoryH3;
+		var subCateogryDetails;
+		var countryDataObject = {categories:[]}; // {categories:[{name:CATEGORY_NAME,subCategories:[{name:SUB_CATEGORY_NAME,details:DETAILS_HTML}]}]}
+		var categoryDataObject;
+		var subCategoryDataObject;
+		
+		for(var categoryIndex=0; categoryIndex < categoriesContainerDiv.children.length; categoryIndex++){
+			categoryDiv = categoriesContainerDiv.children[categoryIndex];
+			if(categoryDiv.style.display !== "none"){
+				categoryH2 = categoryDiv.children[0].innerText;
+				categoryDataObject = {name:categoryH2, subCategories:[]};
+				for(var subCategoriesIndex = 1; subCategoriesIndex < categoryDiv.children.length; subCategoriesIndex++){
+					subCategoryDiv = categoryDiv.children[subCategoriesIndex];
+					if(subCategoryDiv.style.display !== "none"){
+						subCategoryH3 = subCategoryDiv.children[0].innerText;
+						subCateogryDetails = subCategoryDiv.children[1].innerHTML;
+						subCategoryDataObject = {name:subCategoryH3, details:subCateogryDetails};
+						categoryDataObject.subCategories.push(subCategoryDataObject);
+					}
+				}
+				if(categoryDataObject.subCategories.length > 0){
+					countryDataObject.categories.push(categoryDataObject);
+				}
+			}
+		}
+		
+		return countryDataObject;
+	}
+	
+	/**
+	* @description function interates over an array of countries / categories and subcategories data and formats it into a str
+	*/
+	function formatCountriesDataArray(countriesDataArray){
+		var str = "";
+		var country;
+		var category;
+		var subCategory;
+		for(var countryIndex=0; countryIndex < countriesDataArray.length; countryIndex++){
+			country = countriesDataArray[countryIndex];
+			str += "<h1>" + country.name + "</h1>";
+			for(var categoryIndex = 0; categoryIndex < country.categories.length; categoryIndex++){
+				category = country.categories[categoryIndex];
+				str += "<h2>" + category.name + "</h2>";
+				for(var subCategoryIndex = 0; subCategoryIndex < category.subCategories.length; subCategoryIndex++){
+					subCategory = category.subCategories[subCategoryIndex];
+					str += "<h3>" + subCategory.name + "</h3>";
+					str += "" + subCategory.details + "";
+				}
+			}
+			str += "<br />";
+		}
+		return str;
+	}
+	
 
 
 /**
