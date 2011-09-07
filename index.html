@@ -1,0 +1,131 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Eversheds iPad App</title>
+
+<!-- Mobile viewport optimized -->
+<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+<!-- CSS -->
+<link rel="stylesheet" href="stylesheets/style.css" type="text/css" />
+<!--
+<script src="js/zepto.js"></script>
+<script src="js/touch.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/ajax.js"></script>
+<script src="js/assets.js"></script>
+<script src="js/detect.js"></script>
+<script src="js/Utility.js"></script>
+
+-->
+<script src="js/Framework.js"></script>
+<script src='js/main.js'></script>
+</head>
+<body>
+<img src='images/loading.gif' id='loader' alt='loading' />
+<div id="container">
+	<section id='topHeading'>
+		<header>
+			<h1>International Real Estate Guide</h1>
+            <a href="http://www.eversheds.com/uk/home/services/Real_estate/introduction.page"><img src="images/eversheds-logo-small.png"></a>
+		</header>
+		<a href='#' class='button'>Back to our real estate web pages</a>
+	</section>
+	
+	<section id='tagline'>
+		<h2 id='tag' class='center light'>Use the country and category lists below, select options to filter results</h2>
+		<a href='#' id='info_icon'></a>
+	</section>
+	
+	<div id='wrapper'>
+		<section id='countryFilter'>
+			<header>
+				<h2 class='light'>Filter By Country</h2>
+				<a href='#' class='reset'>Reset</a>
+			</header>
+			<nav id='filterCountry'>
+				<ul id='countriesList'></ul>
+				<ul id='scrollNav'>
+					<li><a href='#'>Up</a></li>
+					<li><a href='#'>Down</a></li>
+				</ul>
+			</nav>
+		</section>
+		<section id='categoryFilter'>
+			<header>
+				<h2 class='light'>Filter By Category</h2>
+				<a href='#' class='reset'>Reset</a>
+			</header>
+			<nav id='filterCat'>
+				<ul id='categoriesList'></ul>
+				<ul id='filterScrollNav'>
+					<li>Up</li>
+					<li>Down</li>
+				</ul>
+			</nav>
+		</section>
+		<article id='article'>
+			<div id='yourResults'><span id='resultstitle'>Your results</span><span id='countryTitle'></span>&nbsp;<span id='subcategoryTitle'></span></div>
+			<div id='results'><p id='introText'><strong>Using the country and category lists above, select options to filter results</strong></p></div>
+			<div id='hiddenresults'></div>
+			<div id='template'></div>
+			
+			<div id='panelView'>
+				<ul id='panels'></ul>
+			</div>
+		</article>
+	</div>
+
+	<ul id='icons'>
+		<li id='email'></li>
+		<li id='getintouch'></li>
+	</ul>
+
+</div>
+
+<div id='mask'></div>
+<div id='window'>
+	<a id='window_close'>Close</a>
+	<h1>Get in touch</h1>
+	<h2>To be put in touch with one of our specialists please contact</h2>
+	<section>
+	<p class='contact_info name'><span id='_forename'></span> <span id='_surname'></span></p>
+	<p class='contact_info'>Tel: <span id='_mobile'></span> <span id='_telephone'></span></p>
+	<p class='contact_info'>Email: <span id='_email'></span></p>
+	<p class='hidden'>
+		<span id='_address1'></span>
+		<span id='_address2'></span>
+		<span id='_city'></span>
+		<span id='_contactid'></span>
+		<span id='_postcode'></span>
+		<span id='_url'></li>
+	</p>
+	</section>
+</div>
+	
+<div id='guide'>
+	<a id="close_guide">Close</a>
+	<div id="guide_heading">
+		<h2>Guide to using this application</h2>
+	</div>
+<article>
+<h2>Getting started</h2>
+<p>Quickly filter through the International Real Estate Guide to find the information you require by selecting a Country and or Category and Sub Category from the Filter List.</p>
+<p>As you begin choosing Your Results section below the Filter Lists will begin to populate with your filtered information.</p>
+<p>If no Countries or multiple Countries are selected, then the Results section displays the filtered information for each country within a collapsed panel. These can be opened and closed at will by the user.</p>
+<p>Once you have found the information you require a number of options are available to choose from, these include.</p>
+<ul>
+	<li>Send to a Colleague<li>
+	<li>Get In Touch<li>
+	<li>Download PDF</li>
+</ul>
+<p>You are able to reset your selected filter options by pressing the Reset button at the top of each of the Filter Lists.</p>
+</article>
+</div>
+
+<!--End HTML-->
+</body>
+</html>
