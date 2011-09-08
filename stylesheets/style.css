@@ -5,7 +5,7 @@ www.owainlewis.com
 
 -------------------------------------------------------------- */
 body {
-  /*-webkit-tap-highlight-color:rgba(0,0,0,0);*/
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
   color:#666;
   line-height: 1; }
 
@@ -332,14 +332,18 @@ background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fff),
       top: 14px;
       text-indent: -99999px; }
   #countryFilter #filterCountry {
-    padding: 20px;
+	height: 280px;	/* JH added height to use this UL as the frame for the container */
+    padding: 0px; /* JH removed padding and used margin */
+	margin: 20px 20px 20px 20px;
+	position:relative;	/* JH added relative to overwrite absolute so scroll bar container algin right correctly */
     overflow: hidden;
     float: left; }
     #countryFilter #filterCountry ul:first-child {
-      width: 250px;
+      width: 290px; /* JH ammened from 250 to 290 because of the removal of the scroll buttons */
       float: left; }
     #countryFilter #filterCountry #scrollNav {
       /* Side Nav */
+	  display:none; /* JH hide buttons because of implementation of scroll thumb */
       width: 26px;
       float: left;
       margin-left: 14px; }
@@ -394,13 +398,16 @@ background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fff),
       top: 14px;
       text-indent: -99999px; }
   #categoryFilter #filterCat {
-    padding: 20px;
+	height: 280px;	/* JH added height to use this UL as the frame for the container */
+    padding: 0px; /* JH removed 20px padding and used margin */
+	margin: 20px 20px 20px 20px;
+	position:relative;	/* JH added relative to overwrite absolute so scroll bar container algin right correctly */ 
     float: left;
     overflow: hidden;
     /* Sub Nav */
     /* Side Nav */ }
     #categoryFilter #filterCat ul:first-child {
-      width: 250px;
+	  width: 290px; /* JH ammened from 250 to 290 because of the removal of the scroll buttons */
       float: left; }
     #categoryFilter #filterCat ul li {
       padding: 10px 0 10px 0px;
@@ -420,14 +427,16 @@ background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fff),
       clear: both; }
       #categoryFilter #filterCat ul li ul li {
         margin-left: 0px;
-        width: 190px;/* JH amended from 220px to 190px */
+        width: 230px;/* JH amended from 220px to 190px, then I amened from 190 to 230 to account for extra remove provided by removal of nav buttons */
 		padding-left:60px;/* JH amended from 30px to 60px */
         opacity: 1;
 		cursor: pointer; }
     #categoryFilter #filterCat .subCategories {
       display: none; 
-	  -webkit-transition: all 0.4s ease-in-out;}
+	  /* -webkit-transition: all 0.4s ease-in-out; JH remove for touch event*/
+	  }
     #categoryFilter #filterCat #filterScrollNav {
+	  display:none; /* JH hide buttons because of implementation of scroll thumb */
       width: 20px;
       float: left;
       margin-left: 20px; }
@@ -468,7 +477,8 @@ background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#fff),
   background:#e1e1e1;
   position: relative;
   top: 0;
-  -webkit-transition: all 0.4s ease-in-out; }
+  /* -webkit-transition: all 0.4s ease-in-out; JH remove for touch event*/
+  }
   
 
 #countriesList li {margin-bottom:2px;}
@@ -558,9 +568,72 @@ height:auto;
 #guide_heading{height:80px;background:#FFF;border-bottom:1px solid #CCC;width:100%;margin:0 0 0px 0;}
 #guide_heading h2 {line-height:80px;margin:0 20px;color:#019E97;font-weight:normal;font-size:24px;}
 #close_guide{cursor:pointer;position:absolute;right:0;top:-35px;background:#fff;padding:0px 20px;display:block;color:#222;height:35px;line-height:35px; }
+
+#alert{width:300px;min-height:130px;position:absolute;top:160px;background:#f2f2f2;left:35%;z-index:9999999;display:none}
+#alert h3 {color:#019E97;font-weight:normal;font-size:14px;}
+#alert article {padding:20px}
+#alert_heading{height:60px;background:#FFF;border-bottom:1px solid #CCC;width:100%;margin:0 0 0px 0;}
+#alert_heading h2 {line-height:60px;margin:0 20px;color:#019E97;font-weight:normal;font-size:24px;}
+#close_alert{cursor:pointer;position:absolute;right:0;top:-35px;background:#fff;padding:0px 20px;display:block;color:#222;height:35px;line-height:35px; }
+
 .hidden{display:none}
 .contact_info{color:#019E97;font-weight:500;margin-bottom:10px;margin-left:20px;}
 .name{font-size:20px;font-weight:500}
+
+
+.touchScrollPanelVerticleThumbContainer {
+	height:100%;
+	width:10px;
+	position:absolute;
+	right:0px;
+	top:0px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	overflow:hidden;
+	margin:0px;
+}
+.touchScrollPanelVerticleThumb {
+	width:100%;
+	position:absolute;
+	top:0px;
+	left:0px;
+	margin:0px;	
+}
+.touchScrollPanelHorizontalThumbContainer {
+	height:10px;
+	width:100%;
+	position:absolute;
+	bottom:0px;
+	left:0px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	overflow:hidden;
+	margin:0px;
+}
+.touchScrollPanelHorizontalThumb {
+	height:100%;
+	position:absolute;
+	top:0px;
+	left:0px;	
+	margin:0px;
+}
+.touchScrollPanelThumbGraphics {
+	background-color:rgba(0,0,0,0.66);
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	bottom:2px;
+	left:2px;
+	top:2px;
+	right:2px;
+	position:absolute;
+	border:1px solid rgba(255,255,255,0.6);
+	margin:0px;
+}
+
+
 
 /* -------------------------------------------------------------- 
 Media Queries Landscape

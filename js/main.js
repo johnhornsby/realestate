@@ -53,6 +53,7 @@ NodeList.prototype.toArray = function () {
         noCategories: 0,
         noSubCategories: 0,
         template: {},
+		jsonDataLoadedIncrement:0,
         init: function () {
             var w = window.innerWidth;
             var h = window.innerHeight;
@@ -216,7 +217,20 @@ NodeList.prototype.toArray = function () {
                 }
             }
             D.inject(document.getElementById('hiddenresults'), e);
-        }
+			//JH added to check to see if all is loaded, then hide loader and mask.
+			API.jsonDataLoadedIncrement++;
+			API.checkJsonDataLoaded();
+        },
+		/**
+		* @description check is called after incrementing the jsonDataLoadedIncrement, when all 3 JSON files have loaded then the loader can dissappear,
+		* we also need to ensure that the mask is removed as this is initially present even though invisible, as it captures initial mouse events
+		*/
+		checkJsonDataLoaded: function(){
+			if(this.jsonDataLoadedIncrement === 3){
+				hideLoading();
+				E.onMaskClickHandler();
+			}
+		}
     };
     var A = Object.create(API);
     A.hash = {};
@@ -246,6 +260,9 @@ NodeList.prototype.toArray = function () {
             }
         }
         D.buildCountries(c);
+		//JH added to check to see if all is loaded, then hide loader and mask.
+		API.jsonDataLoadedIncrement++;
+		API.checkJsonDataLoaded();
     };
     A.showContactDetails = function (b) {
         if (arguments && b !== false) {
@@ -338,6 +355,9 @@ NodeList.prototype.toArray = function () {
             }
         }
         D.buildCategories(d);
+		//JH added to check to see if all is loaded, then hide loader and mask.
+		API.jsonDataLoadedIncrement++;
+		API.checkJsonDataLoaded();
     };
 /*
    
@@ -424,6 +444,8 @@ ojpaosjd o
             $('#subcategoryTitle').html('');
             $('#panels li').removeClass('active');
             document.getElementById('introText').innerHTML = '<strong>Using the country and category lists above, select options to filter results</strong>';
+			E.filterCountriesTouchPanelViewController.setScrollY(E.filterCountriesTouchPanelViewController.getScrollMinY());	//scroll to top, do via the controller so css property and controller values don't become out of sync
+			E.filterCountriesTouchPanelViewController.updateThumb(); //thumb will need to be redrawn if there is a change size of container
         },
         resetCategoryFilter: function () {
             $('#template .category').css('display', 'block');
@@ -434,6 +456,8 @@ ojpaosjd o
             $('#categoriesList li ul').css('display', 'none');
             $('#filterCat .parent span').removeClass('open');
             $('#filterCat .parent span').addClass('closed');
+			E.filterCategoriesTouchPanelViewController.setScrollY(E.filterCategoriesTouchPanelViewController.getScrollMinY());	//scroll to top, do via the controller so css property and controller values don't become out of sync
+			E.filterCategoriesTouchPanelViewController.updateThumb(); //thumb will need to be redrawn if there is a change size of container
         },
         add: function (f) {
             var a = document.getElementById('results');
@@ -486,10 +510,17 @@ ojpaosjd o
             //Panels
             var targ = document.getElementById('panels');
             targ.appendChild(new_list);
+			//JH add touch view controller
+			E.onReadyToSetUpCountriesTouchViewController();
+			
+			
         },
         buildCategories: function (a) {
             var b = document.getElementById('categoriesList');
             D.inject.call(this, b, a);
+			//
+			E.onReadyToSetUpCategoriesTouchViewController();
+			
         },
         updateResultsFromQueryString: function (f) {
             var a = document.getElementById('results');
@@ -708,7 +739,7 @@ ojpaosjd o
             $('#scrollNav li').live('click', E.onCountryScrollNavArrowClickHandler);
             $('#filterScrollNav li').live('tap', E.onCategoryScrollNavArrowClickHandler);
             $('#filterScrollNav li').live('click', E.onCategoryScrollNavArrowClickHandler);
-            $('#filterCat .parent span').live('tap', E.onCategoryDisclosureClickHandler);
+           // $('#filterCat .parent span').live('tap', E.onCategoryDisclosureClickHandler);
             $('#filterCat .parent span').live('click', E.onCategoryDisclosureClickHandler);
             $('#filterCat .parent a').live('tap, click', E.onCategoryClickHandler);
             $('#filterCat .subCategories li').live('click', E.onSubCategoryClickHandler);
@@ -727,12 +758,13 @@ ojpaosjd o
                 }
                 return false;
             });
-            $('#countryFilter .reset').live('tap, click', function (e) {
+            $('#countryFilter .reset').live('click', function (e) {
                 D.resetCountryFilter();
                 return false;
             });
-            $('#categoryFilter .reset').live('tap, click', function (e) {
+            $('#categoryFilter .reset').live('click', function (e) {
                 D.resetCategoryFilter();
+
                 return false;
             });
             $('#mask').live('tap', E.onMaskClickHandler);
@@ -751,55 +783,60 @@ ojpaosjd o
                     obj.removeClass('open');
                 }
             });
+			
+			
+			
         },
         onCountryClickHandler: function () {
-            //Update country and category menus
-            var countryListLiIndex = $('#countriesList li').index(this); //get index of tapped li
-            var countryListLiObject = $('#countriesList li:nth-child(' + (countryListLiIndex + 1) + ')'); //get zepto object of li for index
-            var panel_items = $('#panels li:nth-child(' + (countryListLiIndex + 1) + ')'); //get zepto object of panel li with index 
-            if ($('#countriesList li').eq(countryListLiIndex).hasClass('active')) {
-                countryListLiObject.removeClass('active');
-                panel_items.removeClass('active');
-            } else {
-                countryListLiObject.addClass('active');
-                panel_items.addClass('active');
-            }
-
-            //Find out how many currently active items. If there is more than one use the list view.
-            //JH moved this line to after above so we get the right value for currentItems
-            var currentItems = $('#countriesList li.active').length;
-            if (currentItems === 0) {
-                $('#template').hide(); //reset all
-                $('#panelView').hide();
-                $('#countryTitle').html('');
-                $('#subcategoryTitle').html('');
-                document.getElementById('introText').innerHTML = '<strong>Using the country and category lists above, select options to filter results</strong>';
-            } else if (currentItems === 1) { //Only one item
-                $('#template').show(); //show single view container
-                $('#panelView').hide(); //hide multi view container
-                //$('#template .subcategory').show();											//not sure why these need to be shown
-                //$('#template .category').show();
-                document.getElementById('introText').innerHTML = '';
-                var activeCountryID = $('#countriesList li.active').eq(0).attr('data-country-id'); //get active country id as int, this may not be the country the user clicked on as they may have deselected it.
-                API.justCountryClicked(activeCountryID);
-                A.showContactDetails("" + activeCountryID + ""); //sets the contact details
-                D.updateTitle(A.getCountryNameById(activeCountryID));
-                //Or do the panel view here  
-            } else {
-                //Multiple items so do the panel view
-                $('#template').hide();
-                $('#panelView').show();
-                var collection = [];
-                //Find all the active links
-                $('#countriesList li.active').each(function () { //iterate though each actived menu country li
-                    var id = $(this).attr('data-country-id');
-                    collection.push(id);
-                    API.justCountryClicked(id); //copy all countries sub categories into template
-                    Utilities.updatePanels(id, $('#template').html()); //copy the html from the template into the panel, sub category selection styles are set into template, so when the html is copied so are the styles.
-                });
-                A.showContactDetails(false); //sets the contact details, no params uses default
-                $('#countryTitle').html('multiple countries');
-            }
+			if(E.filterCountriesTouchPanelViewController.isStopChildMouseUp() === false){		//check if touchPanelViewController is advising stopPropagation
+				//Update country and category menus
+				var countryListLiIndex = $('#countriesList li').index(this); //get index of tapped li
+				var countryListLiObject = $('#countriesList li:nth-child(' + (countryListLiIndex + 1) + ')'); //get zepto object of li for index
+				var panel_items = $('#panels li:nth-child(' + (countryListLiIndex + 1) + ')'); //get zepto object of panel li with index 
+				if ($('#countriesList li').eq(countryListLiIndex).hasClass('active')) {
+					countryListLiObject.removeClass('active');
+					panel_items.removeClass('active');
+				} else {
+					countryListLiObject.addClass('active');
+					panel_items.addClass('active');
+				}
+	
+				//Find out how many currently active items. If there is more than one use the list view.
+				//JH moved this line to after above so we get the right value for currentItems
+				var currentItems = $('#countriesList li.active').length;
+				if (currentItems === 0) {
+					$('#template').hide(); //reset all
+					$('#panelView').hide();
+					$('#countryTitle').html('');
+					$('#subcategoryTitle').html('');
+					document.getElementById('introText').innerHTML = '<strong>Using the country and category lists above, select options to filter results</strong>';
+				} else if (currentItems === 1) { //Only one item
+					$('#template').show(); //show single view container
+					$('#panelView').hide(); //hide multi view container
+					//$('#template .subcategory').show();											//not sure why these need to be shown
+					//$('#template .category').show();
+					document.getElementById('introText').innerHTML = '';
+					var activeCountryID = $('#countriesList li.active').eq(0).attr('data-country-id'); //get active country id as int, this may not be the country the user clicked on as they may have deselected it.
+					API.justCountryClicked(activeCountryID);
+					A.showContactDetails("" + activeCountryID + ""); //sets the contact details
+					D.updateTitle(A.getCountryNameById(activeCountryID));
+					//Or do the panel view here  
+				} else {
+					//Multiple items so do the panel view
+					$('#template').hide();
+					$('#panelView').show();
+					var collection = [];
+					//Find all the active links
+					$('#countriesList li.active').each(function () { //iterate though each actived menu country li
+						var id = $(this).attr('data-country-id');
+						collection.push(id);
+						API.justCountryClicked(id); //copy all countries sub categories into template
+						Utilities.updatePanels(id, $('#template').html()); //copy the html from the template into the panel, sub category selection styles are set into template, so when the html is copied so are the styles.
+					});
+					A.showContactDetails(false); //sets the contact details, no params uses default
+					$('#countryTitle').html('multiple countries');
+				}
+			}
         },
         onCountryScrollNavArrowClickHandler: function () {
             var i = $('#scrollNav li').index(this);
@@ -819,68 +856,86 @@ ojpaosjd o
             return false;
         },
         onCategoryDisclosureClickHandler: function (e) {
-            var categoryIndex = $('#filterCat .parent span').index(this);
-            var subCategoriesULElement = document.querySelectorAll('.subCategories')[categoryIndex]; //subCategories ul element
-            var disclosureIcon = this; //document.querySelectorAll('#filterCat .parent span')[categoryIndex];
-            if (document.defaultView.getComputedStyle(subCategoriesULElement, null).getPropertyValue('display') === 'block') { //swtich to get if menu is open, if so then close, if not then open
-                subCategoriesULElement.style.display = 'none';
-                disclosureIcon.className = 'closed';
-            } else {
-                subCategoriesULElement.style.display = 'block';
-                disclosureIcon.className = 'open';
-            }
+			if(E.filterCategoriesTouchPanelViewController.isStopChildMouseUp() === false){		//check if touchPanelViewController is advising stopPropagation
+				var categoryIndex = $('#filterCat .parent span').index(this);
+				var subCategoriesULElement = document.querySelectorAll('.subCategories')[categoryIndex]; //subCategories ul element
+				var disclosureIcon = this; //document.querySelectorAll('#filterCat .parent span')[categoryIndex];
+				if (document.defaultView.getComputedStyle(subCategoriesULElement, null).getPropertyValue('display') === 'block') { //swtich to get if menu is open, if so then close, if not then open
+					subCategoriesULElement.style.display = 'none';
+					disclosureIcon.className = 'closed';
+				} else {
+					subCategoriesULElement.style.display = 'block';
+					disclosureIcon.className = 'open';
+				}
+				E.filterCategoriesTouchPanelViewController.updateThumb(); //thumb will need to be redrawn if there is a change size of container
+			}
             return false;
         },
         onCategoryClickHandler: function (e) {
-            if (API.returnCurrentCountry() === false) {
-                alert("please select a country");
-                return;
-            }
-            var categoryIndex = $('#filterCat .parent a').index(this);
-            var subCategoriesULElement = document.querySelectorAll('.subCategories')[categoryIndex]; //subCategories ul element
-            //JH toggle category li to be active
-            var categoryLIObject = $('#filterCat .parent').eq(categoryIndex);
-            if (categoryLIObject.hasClass("active") === false) {
-                categoryLIObject.addClass("active"); //activate all children
-                $(subCategoriesULElement).find("li").addClass("active");
-            } else {
-                categoryLIObject.removeClass("active"); //deactivate all children
-                $(subCategoriesULElement).find("li").removeClass("active");
-            }
-			//if Category is closed then open
-			var disclosureIcon = $('#filterCat .parent span').dom[categoryIndex];
-			if( $(disclosureIcon).hasClass('closed') === true){
-				subCategoriesULElement.style.display = 'block';
-                disclosureIcon.className = 'open';	
+			if(E.filterCategoriesTouchPanelViewController.isStopChildMouseUp() === false){		//check if touchPanelViewController is advising stopPropagation
+				if (API.returnCurrentCountry() === false) {
+					//alert("please select a country");
+					Utilities.showAlert();
+					return;
+				}
+				var categoryIndex = $('#filterCat .parent a').index(this);
+				var subCategoriesULElement = document.querySelectorAll('.subCategories')[categoryIndex]; //subCategories ul element
+				//JH toggle category li to be active
+				var categoryLIObject = $('#filterCat .parent').eq(categoryIndex);
+				if (categoryLIObject.hasClass("active") === false) {
+					categoryLIObject.addClass("active"); //activate all children
+					$(subCategoriesULElement).find("li").addClass("active");
+				} else {
+					categoryLIObject.removeClass("active"); //deactivate all children
+					$(subCategoriesULElement).find("li").removeClass("active");
+				}
+				//if Category is closed then open
+				var disclosureIcon = $('#filterCat .parent span').dom[categoryIndex];
+				if( $(disclosureIcon).hasClass('closed') === true){
+					subCategoriesULElement.style.display = 'block';
+					disclosureIcon.className = 'open';	
+				}
+				
+				//JH--
+				D.updateResultsDisplayPropertiesFromFilterMenu(); //displayProperties of template and panels are upaded to reflect the category filter menu activate subCategories
+				E.filterCategoriesTouchPanelViewController.updateThumb(); //thumb will need to be redrawn if there is a change size of container
 			}
-			
-            //JH--
-            D.updateResultsDisplayPropertiesFromFilterMenu(); //displayProperties of template and panels are upaded to reflect the category filter menu activate subCategories
             return false;
         },
         onSubCategoryClickHandler: function (e) {
             e.preventDefault();
-            var subCategoryLIIndex = $('.subCategories li').index(this);
-            var subCategoryLIElement = $('.subCategories li').get(subCategoryLIIndex);
-            var subCategoryID = parseInt(subCategoryLIElement.getAttribute('data-sub-category-id'));
-            //JH toggle filter menu subCategory li
-            if ($(subCategoryLIElement).hasClass('active') === false) {
-                $(subCategoryLIElement).addClass('active');
-            } else {
-                $(subCategoryLIElement).removeClass('active'); //deactivate parent li
-                $(subCategoryLIElement).parent().parent().removeClass('active'); //remove active class from category if any sub category is non active from category
-            }
-            D.updateResultsDisplayPropertiesFromFilterMenu(); //displayProperties of template and panels are upaded to reflect the category filter menu activate subCategories
-            //var categoryName = B.getSubCategoryNameById(subCategoryID);									//acomplished in the above function
-            //D.updateSubCategory(categoryName);
+			if(E.filterCategoriesTouchPanelViewController.isStopChildMouseUp() === false){		//check if touchPanelViewController is advising stopPropagation
+				var subCategoryLIIndex = $('.subCategories li').index(this);
+				var subCategoryLIElement = $('.subCategories li').get(subCategoryLIIndex);
+				var subCategoryID = parseInt(subCategoryLIElement.getAttribute('data-sub-category-id'));
+				//JH toggle filter menu subCategory li
+				if ($(subCategoryLIElement).hasClass('active') === false) {
+					$(subCategoryLIElement).addClass('active');
+				} else {
+					$(subCategoryLIElement).removeClass('active'); //deactivate parent li
+					$(subCategoryLIElement).parent().parent().removeClass('active'); //remove active class from category if any sub category is non active from category
+				}
+				D.updateResultsDisplayPropertiesFromFilterMenu(); //displayProperties of template and panels are upaded to reflect the category filter menu activate subCategories
+				//var categoryName = B.getSubCategoryNameById(subCategoryID);									//acomplished in the above function
+				//D.updateSubCategory(categoryName);
+			}
             return false;
         },
         onMaskClickHandler: function (e) {
             D.hideMask();
             D.hideWindow();
             Utilities.hideInformationWindow();
-        }
+			Utilities.hideAlert();
+        },
+		onReadyToSetUpCountriesTouchViewController:function(){
+			E.filterCountriesTouchPanelViewController = new TouchScrollPanel({scrollDirection:TouchScrollPanel.SCROLL_DIRECTION_VERTICAL, frameElement:document.getElementById('filterCountry'), contentElement:document.getElementById('countriesList')});
+		},
+		onReadyToSetUpCategoriesTouchViewController:function(){
+			E.filterCategoriesTouchPanelViewController = new TouchScrollPanel({scrollDirection:TouchScrollPanel.SCROLL_DIRECTION_VERTICAL, frameElement:document.getElementById('filterCat'), contentElement:document.getElementById('categoriesList')});
+			
+		}
     };
+	
     var Utilities = {
         //Basically we want to get all the html needed for the id and inject it into the panel
         updatePanels: function (id, html) {
@@ -897,13 +952,19 @@ ojpaosjd o
 	*/
 
         centerInformationWindow: function () {
-            var el, w;
+            var el, w, distance;
             el = $('#guide');
             w = window.innerWidth;
             distance = (w / 2 - 250 ) + 'px'
             el.css('left', distance)
         },
-
+		centerAlert: function () {
+            var el, w, distance;
+            el = $('#alert');
+            w = window.innerWidth;
+            distance  = (w / 2 - 150 ) + 'px'
+            el.css('left', distance)
+        },
         hideInformationWindow: function () {
             D.hideMask();
             return $('#guide').hide();
@@ -912,7 +973,16 @@ ojpaosjd o
             D.showMask();
             Utilities.centerInformationWindow();
             return $('#guide').show();
-        }
+        },
+		hideAlert: function() {
+			 D.hideMask();
+			 return $('#alert').hide();
+		},
+		showAlert: function() {
+			Utilities.centerAlert();
+			D.showMask();
+			return $('#alert').show();
+		}
     }
 
     function bindEvents() {
@@ -922,6 +992,10 @@ ojpaosjd o
         });
         $('#close_guide').bind('click', function () {
             Utilities.hideInformationWindow();
+            return false;
+        });
+		 $('#close_alert').bind('click', function () {
+            Utilities.hideAlert();
             return false;
         });
         $('#window_close').bind('click', function () {
@@ -935,7 +1009,7 @@ ojpaosjd o
         API.query(API._categories, API.buildTemplate);
         API.query(API._items, API.buildAllHTML);
         showLoading();
-        setTimeout(hideLoading, 1000, false);
+        //setTimeout(hideLoading, 1000, false);	//JH now hides when all of the JSON is loaded in API
         bindEvents();
         window.onorientationchange = function () {
             setTimeout(D.updateLoader, 1000, false);
