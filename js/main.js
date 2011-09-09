@@ -166,6 +166,13 @@ NodeList.prototype.toArray = function () {
                     e.appendChild(d);
                 }
             }
+			//JH added to suppliment the country with a reference to the contact
+			var contactCreditDiv = document.createElement('div');
+			contactCreditDiv.className = 'contactCredit';
+			contactCreditDiv.innerHTML = '';
+			e.appendChild(contactCreditDiv);
+			//--
+			
             D.addTemplate(e);
         },
         getAllDetailsByCountryId: function (i) {
@@ -185,6 +192,11 @@ NodeList.prototype.toArray = function () {
                 }
             }
         },
+		getContactCreditAndUpdateById: function(countryID){
+			var contactCredit = $('#template .contactCredit').dom[0];
+			var contactObject = A.contacts[countryID];
+			contactCredit.innerHTML = contactObject.LawFirmName;
+		},
         justCountryClicked: function (countryID, title) {
             var r = API.getAllDetailsByCountryId(countryID); //node list of all sub categories for that country id in hiddenResults
             for (var i = 0; i < r.length; i++) { //iterate through all of the countries subcategory nodes
@@ -192,7 +204,9 @@ NodeList.prototype.toArray = function () {
                 var subCategoryID = parseInt(subCategoryNode.getAttribute('data-subcategory-id'), 10); //get subCategory id from node
                 var subCategoryDetails = subCategoryNode.innerHTML; //get html details from node 
                 API.getDetailsAndUpdateById(subCategoryID, subCategoryDetails) //insert details into template
+				
             }
+			API.getContactCreditAndUpdateById(countryID);
         },
         filterBy: function (a, b) {
             return null;
@@ -249,7 +263,12 @@ NodeList.prototype.toArray = function () {
         for (var d in b) {
             if (Object.prototype.hasOwnProperty.call(b, d)) {
                 A.hash[b[d].CountryId] = b[d].Name;
+				
+				//JH Hack to get LawFirmName in to contacts, I can then use the contacts object to get at LawFirmName
+				b[d].Contact.LawFirmName = b[d].LawFirmName;
+				//--
                 A.contacts[b[d].CountryId] = b[d].Contact;
+				
                 var e = b[d].CountryId;
                 var f = b[d].Name;
                 var g = document.createElement('li');
@@ -285,9 +304,11 @@ NodeList.prototype.toArray = function () {
             D.updateContact(a);
         }
     };
+	/* JH appears not to be used
     A.getContactDetail = function (a, b) {
         var c = A.contacts[arguments[0]];
     };
+	*/
     A.showContacts = function () {
         var a = document.getElementById('window');
         a.style.opacity = 1;
@@ -303,7 +324,7 @@ NodeList.prototype.toArray = function () {
         }
         D.updateResults(c.innerHTML)
     };
-/*
+	/*
    
    Object B
    Category Functionality
@@ -389,7 +410,6 @@ NodeList.prototype.toArray = function () {
         }
     }
 /*
-ojpaosjd o
    
    Object D
    Manages the application display logic
@@ -423,9 +443,9 @@ ojpaosjd o
                 if (document.getElementById(elements[i])) {
                     el = document.getElementById(elements[i]);
 					switch(elements[i]){
-						//case '_email':
-						//	el.innerHTML = '<a href="mailTo:'+a[i]+'">' + a[i] + '</a>';
-							//break;
+						case '_email':
+							el.innerHTML = '<a href="mailTo:'+a[i]+'">' + a[i] + '</a>';
+							break;
 						case '_telephone':
 							el.innerHTML = '<a href="tel:+'+a[i]+'">' + a[i] + '</a>';
 							break;
@@ -616,6 +636,7 @@ ojpaosjd o
         var template, d, f, element;
 		var countriesArray = [];
 		var countryDataObject;
+		var contactFooter = "";
 		
         element = document.getElementById('template');
         if (document.defaultView.getComputedStyle(element, null).getPropertyValue('display') === 'block') {
@@ -623,6 +644,11 @@ ojpaosjd o
 			countryDataObject = gleenCategoriesData(element);
 			countryDataObject.name = document.getElementById('countryTitle').innerText;
 			countriesArray.push(countryDataObject);
+			
+			var countryId = $('#countriesList li.active').eq(0).attr('data-country-id');
+			var contactObject = A.contacts[countryId];
+			
+			contactFooter = '<p>For more information please contact '+contactObject.Forename+contactObject.Surname+' at <a href="mailTo:'+contactObject.Email+'">'+contactObject.Email+'</a><p>';
         } else {
             template = '#panels .active';
 			var countryPanelsLiArray = document.querySelectorAll(template);
@@ -633,6 +659,7 @@ ojpaosjd o
 				countryDataObject.name = countryLi.firstChild.textContent;
 				countriesArray.push(countryDataObject);
 			}
+			contactFooter = '<p>For more information please contact Amy Murtagh at <a href="mailTo:amymurtagh@eversheds.com">AmyMurtagh@eversheds.com</a><p>';
         }
 
         //Fuck sake this is getting silly. Must refactor!!!
@@ -658,7 +685,7 @@ ojpaosjd o
         d = dummy.join('');
 		*/
 
-		d += '<p>For more information please contact Amy Murtagh at <a href="mailTo:amymurtagh@eversheds.com">AmyMurtagh@eversheds.com</a><p>';
+		d += contactFooter;
 
         f = "mailto:?body=" + d;
         window.location.href = f;
@@ -674,13 +701,13 @@ ojpaosjd o
 		var subCategoryDiv;
 		var subCategoryH3;
 		var subCateogryDetails;
-		var countryDataObject = {categories:[]}; // {categories:[{name:CATEGORY_NAME,subCategories:[{name:SUB_CATEGORY_NAME,details:DETAILS_HTML}]}]}
+		var countryDataObject = {categories:[]}; // {categories:[{name:CATEGORY_NAME,lawFirmName:LAW_FIRM_NAME,subCategories:[{name:SUB_CATEGORY_NAME,details:DETAILS_HTML}]}]}
 		var categoryDataObject;
 		var subCategoryDataObject;
 		
 		for(var categoryIndex=0; categoryIndex < categoriesContainerDiv.children.length; categoryIndex++){
 			categoryDiv = categoriesContainerDiv.children[categoryIndex];
-			if(categoryDiv.style.display !== "none"){
+			if(categoryDiv.style.display !== "none" && categoryDiv.className === 'category'){	// ensure category is active and is not a contact credit div
 				categoryH2 = categoryDiv.children[0].innerText;
 				categoryDataObject = {name:categoryH2, subCategories:[]};
 				for(var subCategoriesIndex = 1; subCategoriesIndex < categoryDiv.children.length; subCategoriesIndex++){
@@ -697,6 +724,8 @@ ojpaosjd o
 				}
 			}
 		}
+		
+		countryDataObject.lawFirmName = categoriesContainerDiv.lastChild.innerHTML;				//add lawFirmName
 		
 		return countryDataObject;
 	}
@@ -721,6 +750,7 @@ ojpaosjd o
 					str += "" + subCategory.details + "";
 				}
 			}
+			str += "<h3>" + country.lawFirmName + "</h3>";				//add lawFirmName
 			str += "<br />";
 		}
 		return str;
@@ -754,7 +784,8 @@ ojpaosjd o
                     D.showMask();
                     D.showWindow();
                 } else {
-                    alert("Please select a country first");
+					Utilities.showAlert();
+                   // alert("Please select a country first");
                 }
                 return false;
             });
