@@ -209,13 +209,16 @@ TouchScrollPanel.prototype.build = function(){
 	switch(this._scrollDirection){
 		case TouchScrollPanel.SCROLL_DIRECTION_VERTICAL:
 			$(this._frameElement).append('<div class="touchScrollPanelVerticleThumbContainer"><div class="touchScrollPanelVerticleThumb"><div class="touchScrollPanelThumbGraphics"></div></div></div>');
-			this._thumbElement = $(this._frameElement).find('.touchScrollPanelVerticleThumb').dom[0];
-			this._thumbContainerElement = $(this._frameElement).find('.touchScrollPanelVerticleThumbContainer').dom[0];
+			
+			var frame = $(this._frameElement).find('.touchScrollPanelVerticleThumb');
+			
+			this._thumbElement = frame[0];
+			this._thumbContainerElement = $(this._frameElement).find('.touchScrollPanelVerticleThumbContainer')[0];
 			break;
 		case TouchScrollPanel.SCROLL_DIRECTION_HORIZONTAL:
 			$(this._frameElement).append('<div class="touchScrollPanelHorizontalThumbContainer"><div class="touchScrollPanelHorizontalThumb"><div class="touchScrollPanelThumbGraphics"></div></div></div>');
-			this._thumbElement = $(this._frameElement).find('.touchScrollPanelHorizontalThumb').dom[0];
-			this._thumbContainerElement = $(this._frameElement).find('.touchScrollPanelHorizontalThumbContainer').dom[0];
+			this._thumbElement = $(this._frameElement).find('.touchScrollPanelHorizontalThumb')[0];
+			this._thumbContainerElement = $(this._frameElement).find('.touchScrollPanelHorizontalThumbContainer')[0];
 			break;
 	}
 	this.onFadeOutThumb();

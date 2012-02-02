@@ -69,15 +69,24 @@ NodeList.prototype.toArray = function () {
 	  Paths to the JSON files required for this application
 	  @private
 	 
-	*/
-	/*
-        _countries: 'http://pitch.sequence.co.uk/eversheds/realestate/ipad/2/data/country.json',
-        _items: 'http://pitch.sequence.co.uk/eversheds/realestate/ipad/2/data/item.json',
-        _categories: 'http://pitch.sequence.co.uk/eversheds/realestate/ipad/2/data/category.json',
 		*/
-		_countries: 'http://osdtdes01/eversheds/realestate/ipad/7/data/country.json',
-        _items: 'http://osdtdes01/eversheds/realestate/ipad/7/data/item.json',
-        _categories: 'http://osdtdes01/eversheds/realestate/ipad/7/data/category.json',
+		
+		//_countries: 'http://api.flickr.com/services/rest/?&method=flickr.people.getPublicPhotos&api_key=a57204d74e7d388185a326741d19941f&user_id=38478265@N08&format=json&per_page=100&jsoncallback=?',
+		/*
+		_countries: 'http://estates.eversheds.sequence.co.uk/country/json?callback=?',
+        _items: 'http://estates.eversheds.sequence.co.uk/item/json?callback=?',
+        _categories: 'http://estates.eversheds.sequence.co.uk/category/json?callback=?',
+		*/
+		/*
+        _countries: 'http://pitch.sequence.co.uk/eversheds/realestate/ipad/8/data/country.json',
+        _items: 'http://pitch.sequence.co.uk/eversheds/realestate/ipad/8/data/item.json',
+        _categories: 'http://pitch.sequence.co.uk/eversheds/realestate/ipad/8/data/category.json',
+		*/
+		
+		_countries: 'data/country.json',
+        _items: 'data/item.json',
+        _categories: 'data/category.json',
+		
 		
 		
         get: function (url, callback, e) {
@@ -185,7 +194,7 @@ NodeList.prototype.toArray = function () {
         },
         getDetailsAndUpdateById: function (subCategoryID, subCategoryDetails) { //search template for correct subCategory and insert details 
             var e = $('#template .details'); //object of template and all the nodes
-            var subCategoryNodeList = e.dom; //node list of tempate subcategories
+            var subCategoryNodeList = e; //node list of tempate subcategories
             for (var i = 0; i < subCategoryNodeList.length; i++) {
                 if (parseInt(subCategoryNodeList[i].getAttribute('data-sub-category'), 10) === subCategoryID) {
                     subCategoryNodeList[i].innerHTML = subCategoryDetails;
@@ -193,7 +202,7 @@ NodeList.prototype.toArray = function () {
             }
         },
 		getContactCreditAndUpdateById: function(countryID){
-			var contactCredit = $('#template .contactCredit').dom[0];
+			var contactCredit = $('#template .contactCredit')[0];
 			var contactObject = A.contacts[countryID];
 			contactCredit.innerHTML = contactObject.LawFirmName;
 		},
@@ -484,6 +493,7 @@ NodeList.prototype.toArray = function () {
             a.appendChild(f);
         },
         showMask: function () {
+			//console.log('showMask');
             var w = window.innerWidth;
             var h = window.document.body.clientHeight + 220;
             $('#mask').css('width', w + 'px');
@@ -765,26 +775,29 @@ NodeList.prototype.toArray = function () {
     var E = {
         setup: function () {
             $('#countriesList li').live('click', E.onCountryClickHandler);
-            $('#scrollNav li').live('tap', E.onCountryScrollNavArrowClickHandler);
-            $('#scrollNav li').live('click', E.onCountryScrollNavArrowClickHandler);
-            $('#filterScrollNav li').live('tap', E.onCategoryScrollNavArrowClickHandler);
-            $('#filterScrollNav li').live('click', E.onCategoryScrollNavArrowClickHandler);
+            //$('#scrollNav li').live('tap', E.onCountryScrollNavArrowClickHandler);
+           // $('#scrollNav li').live('click', E.onCountryScrollNavArrowClickHandler);
+            //$('#filterScrollNav li').live('tap', E.onCategoryScrollNavArrowClickHandler);
+            //$('#filterScrollNav li').live('click', E.onCategoryScrollNavArrowClickHandler);
            // $('#filterCat .parent span').live('tap', E.onCategoryDisclosureClickHandler);
             $('#filterCat .parent span').live('click', E.onCategoryDisclosureClickHandler);
-            $('#filterCat .parent a').live('tap, click', E.onCategoryClickHandler);
+            $('#filterCat .parent a').live('click', E.onCategoryClickHandler);
             $('#filterCat .subCategories li').live('click', E.onSubCategoryClickHandler);
             $('#email').bind('click', E.onEmailThisClickHandler);
             $('a').tap(function (e) {
                 e.preventDefault();
                 return false;
             });
-            $('#getintouch').bind('tap, click', function (e) {
+            $('#getintouch').bind('click', function (e) {
                 e.preventDefault();
                 if (API.returnCurrentCountry()) {
                     D.showMask();
                     D.showWindow();
                 } else {
-					Utilities.showAlert();
+					A.showContactDetails(false);
+					D.showMask();
+                    D.showWindow();
+					//Utilities.showAlert();
                    // alert("Please select a country first");
                 }
                 return false;
@@ -798,9 +811,9 @@ NodeList.prototype.toArray = function () {
 
                 return false;
             });
-            $('#mask').live('tap', E.onMaskClickHandler);
+           // $('#mask').live('tap', E.onMaskClickHandler);
             $('#mask').live('click', E.onMaskClickHandler);
-            $('#panels li').live('tap, click', function (e) {
+            $('#panels li').live('click', function (e) {
                 var item = $('#panels li').index(this);
                 var obj = $('#panels li').eq(item);
                 //Panel Open?
@@ -902,6 +915,7 @@ NodeList.prototype.toArray = function () {
 			}
             return false;
         },
+		/*
         onCategoryClickHandler: function (e) {
 			if(E.filterCategoriesTouchPanelViewController.isStopChildMouseUp() === false){		//check if touchPanelViewController is advising stopPropagation
 				if (API.returnCurrentCountry() === false) {
@@ -921,7 +935,7 @@ NodeList.prototype.toArray = function () {
 					$(subCategoriesULElement).find("li").removeClass("active");
 				}
 				//if Category is closed then open
-				var disclosureIcon = $('#filterCat .parent span').dom[categoryIndex];
+				var disclosureIcon = $('#filterCat .parent span')[categoryIndex];
 				if( $(disclosureIcon).hasClass('closed') === true){
 					subCategoriesULElement.style.display = 'block';
 					disclosureIcon.className = 'open';	
@@ -933,9 +947,59 @@ NodeList.prototype.toArray = function () {
 			}
             return false;
         },
+		*/
+		/**
+		* Clicking on the category now does not select the whole category simply opens and reveals subCategories
+		* I have commented out the selection code rather than refactoring with the disclosure button handler for now
+		*/
+        onCategoryClickHandler: function (e) {
+			if(E.filterCategoriesTouchPanelViewController.isStopChildMouseUp() === false){		//check if touchPanelViewController is advising stopPropagation
+				/*
+				if (API.returnCurrentCountry() === false) {
+					//alert("please select a country");
+					Utilities.showAlert();
+					return;
+				}
+				*/
+				
+				var categoryIndex = $('#filterCat .parent a').index(this);
+				var subCategoriesULElement = document.querySelectorAll('.subCategories')[categoryIndex]; //subCategories ul element
+				//JH toggle category li to be active
+				
+				/*
+				var categoryLIObject = $('#filterCat .parent').eq(categoryIndex);
+				if (categoryLIObject.hasClass("active") === false) {
+					categoryLIObject.addClass("active"); //activate all children
+					$(subCategoriesULElement).find("li").addClass("active");
+				} else {
+					categoryLIObject.removeClass("active"); //deactivate all children
+					$(subCategoriesULElement).find("li").removeClass("active");
+				}
+				*/
+				//if Category is closed then open
+				var disclosureIcon = $('#filterCat .parent span')[categoryIndex];
+				if( $(disclosureIcon).hasClass('closed') === true){
+					subCategoriesULElement.style.display = 'block';
+					disclosureIcon.className = 'open';	
+				}else{
+					subCategoriesULElement.style.display = 'none';
+					disclosureIcon.className = 'closed';
+				}
+				
+				//JH--
+				//D.updateResultsDisplayPropertiesFromFilterMenu(); //displayProperties of template and panels are upaded to reflect the category filter menu activate subCategories
+				//E.filterCategoriesTouchPanelViewController.updateThumb(); //thumb will need to be redrawn if there is a change size of container
+			}
+            return false;
+        },
         onSubCategoryClickHandler: function (e) {
             e.preventDefault();
 			if(E.filterCategoriesTouchPanelViewController.isStopChildMouseUp() === false){		//check if touchPanelViewController is advising stopPropagation
+				if (API.returnCurrentCountry() === false) {
+					//alert("please select a country");
+					Utilities.showAlert();
+					return;
+				}
 				var subCategoryLIIndex = $('.subCategories li').index(this);
 				var subCategoryLIElement = $('.subCategories li').get(subCategoryLIIndex);
 				var subCategoryID = parseInt(subCategoryLIElement.getAttribute('data-sub-category-id'));
